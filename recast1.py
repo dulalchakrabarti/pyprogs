@@ -134,15 +134,23 @@ for key in d.copy():
   rts = buf[4:6]
   tmr = rts[0]
   vlr = rts[1]
+  tmr_ = []
+  vlr_ = []
   for i,j in zip(tmr,vlr):
-   if j == None or j == '':
-    tmr.remove(i)
-    vlr.remove(j)
-  vlrf = [float(x) for x in vlr]
-  vlrfmx = max(vlrf)
-  vlrfnorm = [(j/vlrfmx) for j in vlrf]
-  for num in range(len(tmr)):
-   ts[tmr[num]] = vlrfnorm[num]
+   if j != None:
+    tmr_.append(i)
+    vlr_.append(j)
+  if len(vlr_) > 10:
+   tmr = tmr_
+   vlr = vlr_
+  if None in vlr:
+   pass
+  else:
+   vlrf = [float(x) for x in vlr]
+   vlrfmx = max(vlrf)
+   vlrfnorm = [(j/vlrfmx) for j in vlrf]
+   for num in range(len(tmr)):
+    ts[tmr[num]] = vlrfnorm[num]
   klst = ts.copy().keys()
   sorted(klst)
   for key in klst:
@@ -274,15 +282,23 @@ for key in d.copy():
   rts = buf[4:6]
   tmr = rts[0]
   vlr = rts[1]
+  tmr_ = []
+  vlr_ = []
   for i,j in zip(tmr,vlr):
-   if j == None or j == '':
-    tmr.remove(i)
-    vlr.remove(j)
-  vlrf = [float(x) for x in vlr]
-  vlrfmx = max(vlrf)
-  vlrfnorm = [(j/vlrfmx) for j in vlrf]
-  for num in range(len(tmr)):
-   ts[tmr[num]] = vlrfnorm[num]
+   if j != None:
+    tmr_.append(i)
+    vlr_.append(j)
+  if len(vlr_) > 10:
+   tmr = tmr_
+   vlr = vlr_
+  if None in vlr:
+   pass
+  else:
+   vlrf = [float(x) for x in vlr]
+   vlrfmx = max(vlrf)
+   vlrfnorm = [(j/vlrfmx) for j in vlrf]
+   for num in range(len(tmr)):
+    ts[tmr[num]] = vlrfnorm[num]
   klst = ts.copy().keys()
   sorted(klst)
   for key in klst:

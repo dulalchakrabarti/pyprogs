@@ -17,19 +17,16 @@ def rain_class(rain):
     elif float(rain) > 60.0:
      cat = 2
     return cat
+gl = open('total.csv','w')
 files = glob.glob('*_*.csv')
 for item in files:
  itm = item.split('_')
  if isfloat(itm[0]):
-  print(item,'opened..................')
-  gl = open(item[:-4]+'_.csv','a+')
-  gl.write('time'+','+'ir1'+','+'ir2'+','+'mir'+','+'wv'+','+'rain'+'\n')
+  #print(item,'opened..................')
   ir1 = []
   ir2 = []
   mir = []
   wv = []
-  now = 0
-  then = 0    
   lines = [line.rstrip('\n') for line in open(item)]
   for line in lines:
    line = line.split(',')
@@ -46,5 +43,4 @@ for item in files:
    rfcl = rain_class(rain)
    #print(k[0]+','+k[1]+','+l[1]+','+m[1]+','+n[1]+','+str(rfcl))
    gl.write(k[0]+','+k[1]+','+l[1]+','+m[1]+','+n[1]+','+str(rfcl)+'\n')
-  gl.close()
-  print(item,'closed..................')
+  #print(item,'closed..................')

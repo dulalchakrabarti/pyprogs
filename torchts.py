@@ -50,7 +50,7 @@ def split_fn(chunk):
     inputs = torch.tensor(chunk[:, :-1, :], device=device)
     targets = torch.tensor(chunk[:, 1:, :], device=device)
     return inputs, targets
-def data_to_dataset(train_data, val_data, test_data, batch_size=32, target_features=list(range(20))):
+def data_to_dataset(train_data, val_data, test_data, batch_size=32, target_features=list(range(5))):
     '''
     split each train split into inputs and targets 
     convert each train split into a tf.dataset
@@ -221,7 +221,7 @@ class Transformer(nn.Module):
         return x, attention_weights # (B,S,S)
 # Test Forward pass on the Transformer: 
 transformer = Transformer(num_layers=1, D=32, H=1, hidden_mlp_dim=32,
-                                       inp_features=28, out_features=20, dropout_rate=0.1)
+                                       inp_features=5, out_features=5, dropout_rate=0.1)
 transformer.to(device)
 (inputs, targets) = next(iter(train_dataset))
                          
@@ -233,7 +233,7 @@ param_sizes = [p.numel() for p in transformer.parameters()]
 print(f"number of weight/biases matrices: {len(param_sizes)} "
       f"for a total of {np.sum(param_sizes)} parameters ")
 transformer = Transformer(num_layers=1, D=32, H=4, hidden_mlp_dim=32,
-                          inp_features=28, out_features=20, dropout_rate=0.1).to(device)
+                          inp_features=5, out_features=5, dropout_rate=0.1).to(device)
 optimizer = torch.optim.RMSprop(transformer.parameters(), 
                                 lr=0.00005)
 from tqdm import tqdm

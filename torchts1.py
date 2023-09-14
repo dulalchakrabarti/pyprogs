@@ -66,7 +66,7 @@ print(f'Number of rows with NaN values after cleaning: {nan_values.shape[0]}')
 #Total number of samples
 print(f'Total number of samples: {dataset_clean.shape[0]}')
 print(f'Number of features: {dataset_clean.shape[1]}')
-print_data = False
+print_data = True
 print_graphs = False
 if print_data is True:
   for column in dataset_clean.columns:
@@ -89,7 +89,7 @@ if print_graphs is True:
   for i, column in enumerate(dataset_clean.columns):
     if i > 0:
       # Feature in a weekly interval
-      utils_bsc.week_plot(dataset_clean, i, column)
+      utils_bsc.plot(dataset_clean, i, column)
       # Feature in a daily interval (only the values of weekdays between 4:00 and 19:30)
       utils_bsc.daily_plot(dataset_clean, i, column)
 # We print some graphs showing the density distribution of every feature
@@ -98,33 +98,6 @@ if print_graphs is True:
     if column != 'time':
       sns.displot(dataset_clean, x=column, kind="kde")
 
-# We create two extra data sets, one with the weekdays between 4:00 and 18:30 and one with the rest.
-dataset_clean_time = pd.to_datetime(dataset_clean['time'])
-
-day_mask = dataset_clean_time.dt.day_name()
-
-time_mask = (dataset_clean_time.dt.hour >= 4) & ((dataset_clean_time.dt.hour < 19) | ((dataset_clean_time.dt.hour == 19) & (dataset_clean_time.dt.minute <= 30))) & ((day_mask == ('Monday')) | (day_mask == ('Tuesday')) | (day_mask == ('Wednesday')) | (day_mask == ('Thursday')) | (day_mask == ('Friday')))
-
-dataset_weekdays = dataset_clean[time_mask]
-
-for i in range(len(time_mask)):
-  if time_mask[i] == False:
-    time_mask[i] = True
-  elif time_mask[i] == True:
-    time_mask[i] = False
-
-dataset_weekend = dataset_clean[time_mask]
-print(f'Weekdays dataset size: {len(dataset_weekdays)}')
-print(f'Weekend dataset size: {len(dataset_weekend)}')
-if print_graphs is True:
-  for column in tqdm(dataset_weekdays.columns):
-    if column != 'time':
-      sns.displot(dataset_weekdays, x=column, kind="kde")
-
-if print_graphs is True:
-  for column in tqdm(dataset_weekend.columns):
-    if column != 'time':
-      sns.displot(dataset_weekend, x=column, kind="kde")
 # Perform the data normalisation in the whole dataset. We can print the distribution of the data if we want.
 dataset_norm = utils_bsc.normalize_mean_std_dataset(dataset_clean)
 
@@ -135,7 +108,7 @@ if print_graphs is True:
     if column != 'time':
       sns.displot(dataset_norm, x=column, kind="kde")
 # Perform the data normalisation in the weekdays dataset. We can print the distribution of the data if we want.
-dataset_weekdays_norm = utils_bsc.normalize_mean_std_dataset(dataset_weekdays)
+#dataset_weekdays_norm = utils_bsc.normalize_mean_std_dataset(dataset_weekdays)
 
 print_graphs = False
 
@@ -144,7 +117,7 @@ if print_graphs is True:
     if column != 'time':
       sns.displot(dataset_weekdays_norm, x=column, kind="kde")
 # Perform the data normalisation in the weekdays dataset. We can print the distribution of the data if we want.
-dataset_weekend_norm = utils_bsc.normalize_mean_std_dataset(dataset_weekend)
+#dataset_weekend_norm = utils_bsc.normalize_mean_std_dataset(dataset_weekend)
 
 print_graphs = False
 
@@ -155,8 +128,8 @@ if print_graphs is True:
 
 
 dataset_norm.head()
-dataset_weekdays_norm.head()
-dataset_weekend_norm.head()
+#dataset_weekdays_norm.head()
+#dataset_weekend_norm.head()
 correlations = []
 matrix = []
 
@@ -239,7 +212,7 @@ print("Standard deviation Loss of baselinemodel: ", np.std(losses_test))
 start_train_FFN = True
 
 # Create model FFN instance
-model_FFN = utils_bsc.ANN_relu(18, 18).to(device)
+model_FFN = utils_bsc.ANN_relu(5, 5).to(device)
 
 print(f'Model: {type(model_FFN).__name__}')
 print(f'{utils_bsc.count_parameters(model_FFN)} trainable parameters.')
@@ -277,7 +250,6 @@ if start_train_FFN is True:
     print(f'Test Loss: {best_test_loss}')
     print(f'\nTraining time for {n_epochs} epochs: {execution_time} seconds')
     print('....................here................')
-
     # save to npy file
     np.save(saved_results + '/FFN_train.npy', train_losses_FFN)
     np.save(saved_results + '/FFN_test.npy', test_losses_FFN)
@@ -295,31 +267,32 @@ if start_train_FFN is True:
     baseline_loss = [np.mean(losses_train) for i in range(len(train_losses_FFN))]
     utils_bsc.print_results_training(train_loss=train_losses_FFN, test_loss=test_losses_FFN, test_loss_baseline=baseline_loss, baseline_label='Baseline', title="Full Forward Neural Network train results")
 training_results_transformers ={}
-models = {'vanilla': [6, 1, 6, 2048, 'SGD', 0.01, None, True, 30, 16]}
+models = {'vanilla': [5, 1, 5, 2048, 'SGD', 0.01, None, True, 30, 16]}
 print('...............crossed this 4..........')
+print(models, device, dataset_norm, training_results_transformers, saved_results, colab)
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
-print('...............crossed this 6..........')
+print('...............crossed this 5..........')
 if models['vanilla'][7] is True:
     print(test_losses_FFN)
     baseline_loss = [np.mean(i) for i in test_losses_FFN]
     utils_bsc.print_results_training(train_loss=training_results_transformers['vanilla'][4], test_loss=training_results_transformers['vanilla'][5], test_loss_baseline=baseline_loss, baseline_label='FFN Test Loss', title="Training results " + 'vanilla' + " Transformer (" + str(models['vanilla'][0]) + " encoder layers, " + str(models['vanilla'][1]) + " decoder layer, " + str(models['vanilla'][2]) + " heads. " + models['vanilla'][4])
-
+'''
 models['vanilla'][7] = False
-models['ADAM'] = [6, 1, 6, 2048, 'ADAM', 0.001, None, True, 30, 16]
+models['ADAM'] = [5, 1, 5, 2048, 'ADAM', 0.001, None, True, 32, 16]
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
 if models['ADAM'][7] is True:
 
     baseline_loss = [np.mean(i) for i in training_results_transformers['vanilla'][5]]
     utils_bsc.print_results_training(train_loss=training_results_transformers['ADAM'][4], test_loss=training_results_transformers['ADAM'][5], test_loss_baseline=baseline_loss, baseline_label='Vanilla transformer Test Loss', title="Training results " + 'ADAM' + " Transformer (" + str(models['ADAM'][0]) + " encoder layers, " + str(models['ADAM'][1]) + " decoder layer, " + str(models['ADAM'][2]) + " heads. " + models['ADAM'][4])
 models['ADAM'][7] = False
-models['Momentum'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 30, 16]
+models['Momentum'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 32, 16]
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
 if models['Momentum'][7] is True:
 
     baseline_loss = [np.mean(i) for i in training_results_transformers['vanilla'][5]]
     utils_bsc.print_results_training(train_loss=training_results_transformers['Momentum'][4], test_loss=training_results_transformers['Momentum'][5], test_loss_baseline=baseline_loss, baseline_label='Vanilla transformer Test Loss', title="Training results " + 'Momentum' + " Transformer (" + str(models['Momentum'][0]) + " encoder layers, " + str(models['Momentum'][1]) + " decoder layer, " + str(models['Momentum'][2]) + " heads. " + models['Momentum'][4])
 models['Momentum'][7] = False
-models['smallest'] = [1, 1, 1, 512, 'SGD', 0.001, 0.9, True, 30, 16]
+models['smallest'] = [1, 1, 1, 512, 'SGD', 0.001, 0.9, True, 32, 16]
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
 if models['smallest'][7] is True:
 
@@ -327,25 +300,18 @@ if models['smallest'][7] is True:
     utils_bsc.print_results_training(train_loss=training_results_transformers['smallest'][4], test_loss=training_results_transformers['smallest'][5], test_loss_baseline=baseline_loss, baseline_label='Vanilla transformer Test Loss', title="Training results " + 'smallest' + " Transformer (" + str(models['smallest'][0]) + " encoder layers, " + str(models['smallest'][1]) + " decoder layer, " + str(models['smallest'][2]) + " heads. " + models['smallest'][4])
 
 models['smallest'][7] = False
-models['bigger'] = [10, 5, 9, 4096, 'SGD', 0.001, 0.9, True, 30, 16]
+models['bigger'] = [5, 5, 5, 4096, 'SGD', 0.001, 0.9, True, 32, 16]
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
 if models['bigger'][7] is True:
     baseline_loss = [np.mean(i) for i in training_results_transformers['vanilla'][5]]
     utils_bsc.print_results_training(train_loss=training_results_transformers['bigger'][4], test_loss=training_results_transformers['bigger'][5], test_loss_baseline=baseline_loss, baseline_label='Vanilla transformer Test Loss', title="Training results " + 'bigger' + " Transformer (" + str(models['bigger'][0]) + " encoder layers, " + str(models['bigger'][1]) + " decoder layer, " + str(models['bigger'][2]) + " heads. " + models['bigger'][4])
 models['bigger'][7] = False
-models['seq_15'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 15, 16]
-models['seq_60'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 60, 16]
-models['seq_2'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 2, 16]
-models['seq_20'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 20, 16]
-models['seq_10'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 10, 16]
-models['seq_120'] = [6, 1, 6, 2048, 'SGD', 0.001, 0.9, True, 120, 16]
+models['seq_15'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 15, 16]
+models['seq_60'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 60, 16]
+models['seq_2'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 2, 16]
+models['seq_20'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 20, 16]
+models['seq_10'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 10, 16]
+models['seq_120'] = [5, 1, 5, 2048, 'SGD', 0.001, 0.9, True, 120, 16]
 print(models)
 training_results_transformers = utils_bsc.define_train_transformers(models, device, dataset_norm, training_results_transformers, saved_results, colab)
-
-
-
-
-
-
-
-
+'''

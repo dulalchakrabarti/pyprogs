@@ -47,6 +47,7 @@ def week_plot(data, col, name):
 
 def daily_plot(data, col, name):
     j = 0
+    print(data.shape)
     dataday = []
     count = 1
 
@@ -59,8 +60,9 @@ def daily_plot(data, col, name):
 
     datafix = []
 
-    for i in range(6):
+    for i in range(5):
         for j in range(0, 5):
+            print(j,i, dataday[j+7*i])
             datafix.append(dataday[j + 7 * i])
 
     for k in datafix:
@@ -83,7 +85,12 @@ def daily_plot(data, col, name):
     ax1.boxplot(datafix)
     plt.show()
 
-
+def plot(data, col, name):
+    '''
+    '''
+    figure, ax1 = plt.subplots()
+    ax1.plot(data[data.columns[0]],data[data.columns[1]],linewidth=0.5,zorder=1, label = name)
+    plt.show()
 # apply the mean / stddev scaling in Pandas using the .mean() and .std() methods
 def normalize_mean_std_dataset(df):
     # copy the dataframe
@@ -370,9 +377,9 @@ def count_parameters(model: torch.nn.Module, only_trainable: bool = True) -> int
 
 class Transformer(nn.Module):
     def __init__(self, feature_size, output_size, num_encoder_layers, num_heads, num_decoder_layers, device,
-                 dim_feedforward: int = 2048, dropout: float = 0.1, batch_first: bool = False):
+                 dim_feedforward: int = 2040, dropout: float = 0.1, batch_first: bool = False):
         super(Transformer, self).__init__()
-
+        print('feature_size',feature_size,'num_heads',num_heads,'dim_feedforward')
         encoder_layer = nn.TransformerEncoderLayer(d_model=feature_size, nhead=num_heads,
                                                    dim_feedforward=dim_feedforward, dropout=dropout, device=device,
                                                    batch_first=batch_first)
@@ -515,16 +522,16 @@ def training_transformer(model, optimizer, criterion, train_loader, test_loader,
 def define_train_transformers(models, device, dataset, training_results_transformers, path_save, colab):
     for i in models:
         if models[i][7] is True:
-            print('...............crossed this 5..........')
+            print('...............crossed this utils **..........')
 
             loader_train, loader_test = create_sequece_dataloaders(dataset=dataset, seq_length=models[i][8],
                                                                    batch_size=models[i][9], device=device)
-
+            print('encoder',models[i][0], 'decoder',models[i][1],'num_heads',models[i][2],'dim_ff',models[i][3])
             # Initialize Transformer Model and Optimizer
             model = Transformer(num_encoder_layers=models[i][0],
                                 num_decoder_layers=models[i][1],
-                                feature_size=18,
-                                output_size=18,
+                                feature_size=5,#18
+                                output_size=5,#18
                                 num_heads=models[i][2],
                                 dim_feedforward=models[i][3],
                                 device=device,

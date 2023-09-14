@@ -1,4 +1,4 @@
-import os
+import os,sys
 import glob
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -55,11 +55,24 @@ six.extend(eight)
 six.extend(nine)
 six.extend(ten)
 six.extend(eleven)
-d4 = {}
+zz = []
 for num in range(0,len(six),4):
- #print('processing file.....'+six[num],'processing file.....'+six[num+1],'processing file.....'+six[num+2],'processing file.....'+six[num+3])
- ir1lines = [line.rstrip('\n') for line in open(six[num])]
+ if six[num][11:14] == 'ir1':
+  zz.append(six[num])
+  zz.append(six[num+1])
+  zz.append(six[num+2])
+  zz.append(six[num+3])
+ else:
+  num = num-1
+  zz.append(six[num])
+  zz.append(six[num+1])
+  zz.append(six[num+2])
+  zz.append(six[num+3])
+d4 = {}
+for num in range(0,len(zz),4):
+ ir1lines = [line.rstrip('\n') for line in open(zz[num])]
  lir1 = len(ir1lines)
+ print('processing ir1....',num,lir1)
  for n in range(lir1):
   ir1line = ir1lines[n].split(',')
   kir1 = ir1line[0]+'_'+ir1line[1]
@@ -69,8 +82,9 @@ for num in range(0,len(six),4):
    d4[kir1].append(ir1)
   else:
    d4[kir1] = [ir1]
- ir2lines = [line.rstrip('\n') for line in open(six[num+1])]
+ ir2lines = [line.rstrip('\n') for line in open(zz[num+1])]
  lir2 = len(ir2lines)
+ print('processing ir2....',num,lir2)
  for n in range(lir2):
   ir2line = ir2lines[n].split(',')
   kir2 = ir2line[0]+'_'+ir2line[1]
@@ -80,8 +94,9 @@ for num in range(0,len(six),4):
    d4[kir2].append(ir2)
   else:
    d4[kir2] = [ir2]
- mirlines = [line.rstrip('\n') for line in open(six[num+2])]
+ mirlines = [line.rstrip('\n') for line in open(zz[num+2])]
  lmir = len(mirlines)
+ print('processing mir....',num,lmir)
  for n in range(lmir):
   mirline = mirlines[n].split(',')
   kmir = mirline[0]+'_'+mirline[1]
@@ -91,30 +106,34 @@ for num in range(0,len(six),4):
    d4[kmir].append(mir)
   else:
    d4[kmir] = [mir]
- if (num+3) < len(six):
-  wvlines = [line.rstrip('\n') for line in open(six[num+3])]
-  lwv = len(wvlines)
-  for n in range(lwv):
-   wvline = wvlines[n].split(',')
-   kwv = wvline[0]+'_'+wvline[1]
-   wv = wvline[2:]
-   wv.append('wv')
-   if kwv in d4.keys():
-    d4[kwv].append(wv)
-   else:
-    d4[kwv] = [wv]
+ wvlines = [line.rstrip('\n') for line in open(zz[num+3])]
+ lwv = len(wvlines)
+ print('processing wv....',num,lwv)
+ for n in range(lwv):
+  wvline = wvlines[n].split(',')
+  kwv = wvline[0]+'_'+wvline[1]
+  wv = wvline[2:]
+  wv.append('wv')
+  if kwv in d4.keys():
+   d4[kwv].append(wv)
+  else:
+   d4[kwv] = [wv]
 klst = d4.keys()
 sorted(klst)
-#print(klst)
+print('dictionary sorted....',len(klst))
+count = 0
 for k in klst:
  n = len(d4[k])
+ print(k,n)
  if n > 35000:
   lst = d4[k]
   k = k.strip()
   fl = open(k+'.csv','w')
   print(k+'.csv'+' opened for........',n,' bytes')
   for item in lst:
-   #print(item[0],item[1],item[2],item[-1])
+   print(item[0],item[1],item[2],item[-1])
    fl.write(item[0]+','+item[1]+','+item[2]+','+item[-1]+'\n')
   fl.close()
- time.sleep(1)
+ count+=1
+ if count > len(klst):
+  sys.exit()
