@@ -1,10 +1,9 @@
+import urllib.request
 import http
 import numpy as np
 import time
-import requests
-import json
 seconds1 = time.time()
-gl = open('trainir1.csv', 'w')
+gl = open('cloudir1.txt', 'w')
 def count_out(lon,lat):
     '''
     '''
@@ -14,31 +13,38 @@ def count_out(lon,lat):
     lo_st = str(lo_st_)
     lo_end_ = float(lon) + dx/2
     lo_end = str(lo_end_)
-    la_st_ = float(lat) - dy/4
+    la_st_ = float(lat) - dy/2
     la_st = str(la_st_)
-    la_end_ = float(lat) + dy/4
+    la_end_ = float(lat) + dy/2
     la_end = str(la_end_)
     out=[]
-    count = 0
-    for lati in np.arange(la_st_,la_end_,dy/64):
+    for lati in np.arange(la_st_,la_end_,dy/4):
      lati_ = str(lati)
      try:
-      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-02-05T00:00:00&FORMAT=text/json")
-      resp = r1.text
-      data = json.loads(resp)
-      lat = data['lat'][19:47]
-      lon = data['lon'][19:47]
-      vals = data['IMG_TIR1']['values'][19:47]
-      #for l,m,n in zip(lat,lon,vals):
-       #gl.write(str(l)+','+str(m)+','+str(n)+'\n')
-      out.extend(vals)
-      count+=1
-      if count > 27:
-       return out
-      #print(count)
-     except requests.exceptions.ConnectionError:
-      print('Timed out!!')
-      
+      f1 = urllib.request.urlopen("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2021-11-26T12:00:00&FORMAT=text/json")
+      txt1 = f1.read()
+      syn = txt1.split(b'\n')
+      for item in syn:
+       txt = item.decode('utf-8')
+       #print(txt)
+       buf = txt.split('{')
+       dist = buf[1].split('"dist":[')
+       lon = buf[1].split('"lon":[')
+       lat = buf[1].split('"lat":[')
+       d = dist[1].split(']')
+       lo = lon[1].split(']')
+       la = lat[1].split(']')
+       val = buf[2].split('"unit":"","values":[')
+       dst = d[0].split(',')
+       lon = lo[0].split(',')
+       lat = la[0].split(',')
+       cnt = val[1].split(']}}')
+       vals = cnt[0].split(',')
+       out.extend(vals)
+     except http.client.HTTPException as e:
+      print(e)
+      f1.close()
+    return(out)
 stn = {}
 lines = [line.rstrip('\n') for line in open('class.csv')]
 for inp in lines:
@@ -72,17 +78,11 @@ for key in keylist:
  lat = dec[key][0]
  lon = dec[key][1]
  cls = dec[key][2]
- print(count)
  buf = count_out(lon,lat)
- print(lat, lon, cls, len(buf))
  val = ','.join(str(x) for x in buf)
+ print(lat, lon, cls,len(val))
  print('.................................')
- count+=1
  gl.write(str(lat)+','+str(lon)+','+str(cls)+','+val+'\n')
- #if count > 100:
-  #seconds2 = time.time()
-  #print('elapsed minutes....',(seconds2-seconds1)/60.0)
-  #exit()
 gl.close()
 seconds2 = time.time()
 print('elapsed minutes....',(seconds2-seconds1)/60.0)

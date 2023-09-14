@@ -27,12 +27,12 @@ def cldtype(buf1,buf2):
       return 7
 
 import urllib.request
-add = "https://www.wis-jma.go.jp/d/o/DEMS/Alphanumeric/Surface/SHIP/20220202/000000/"
+add = "https://www.wis-jma.go.jp/d/o/DEMS/Alphanumeric/Surface/SHIP/20220210/180000/"
 f1 = urllib.request.urlopen(add)
 txt1 = f1.read()
 syn = txt1.split(b'\n')
 lst = []
-fl = open('class.csv','a')
+fl = open('obs_train_class.csv','a')
 #fl.write('stn'+','+'stn'+','+'lat'+','+'lon'+','+'cldtype'+'/n')
 for item in syn:
  txt = item.decode('utf-8')

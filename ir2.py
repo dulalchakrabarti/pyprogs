@@ -1,16 +1,49 @@
-import pandas as pd
+import http
 import numpy as np
-from osgeo import osr,gdal
-import struct
-from osgeo.gdalconst import *
-import os, sys
-gl = open('cloudir2.txt', 'w')
+import time
+import requests
+import json
+seconds1 = time.time()
+gl = open('cloudir2.csv', 'w')
+def count_out(lon,lat):
+    '''
+    '''
+    dx = 0.1
+    dy = 0.1
+    lo_st_ = float(lon)-dx/2
+    lo_st = str(lo_st_)
+    lo_end_ = float(lon) + dx/2
+    lo_end = str(lo_end_)
+    la_st_ = float(lat) - dy/8
+    la_st = str(la_st_)
+    la_end_ = float(lat) + dy/8
+    la_end = str(la_end_)
+    out=[]
+    count = 0
+    for lati in np.arange(la_st_,la_end_,dy/64):
+     lati_ = str(lati)
+     try:
+      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR2&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-02-01T18:00:00&FORMAT=text/json")
+      resp = r1.text
+      data = json.loads(resp)
+      lat = data['lat'][25:40]
+      lon = data['lon'][25:40]
+      vals = data['IMG_TIR2']['values'][25:40]
+      #for l,m,n in zip(lat,lon,vals):
+       #gl.write(str(l)+','+str(m)+','+str(n)+'\n')
+      out.extend(vals)
+      count+=1
+      if count > 14:
+       return out
+      #print(count)
+     except requests.exceptions.ConnectionError:
+      print('Timed out!!')
+      
 stn = {}
 lines = [line.rstrip('\n') for line in open('class.csv')]
 for inp in lines:
  lst = inp.split(',')
  stn[lst[0]] = lst[1:]
-print(len(stn))
 dec = {}
 for key,val in stn.items():
  city = key
@@ -32,97 +65,25 @@ for key,val in stn.items():
  dec[city].append(lon)
  cls = val[3]
  dec[city].append(cls)
-#print(len(dec))
-def latLonToPixel(geotifAddr, latLonPairs):
-    # Load the image dataset
-    ds = gdal.Open(geotifAddr)
-    # Get a geo-transform of the dataset
-    gt = ds.GetGeoTransform()
-    # Create a spatial reference object for the dataset
-    srs = osr.SpatialReference()
-    srs.ImportFromWkt(ds.GetProjection())
-    # Set up the coordinate transformation object
-    srsLatLong = srs.CloneGeogCS()
-    ct = osr.CoordinateTransformation(srsLatLong,srs)
-    # Go through all the point pairs and translate them to latitude/longitude pairings
-    pixelPairs = []
-    for point in latLonPairs:
-     # Change the point locations into the GeoTransform space
-     (point[1],point[0],holder) = ct.TransformPoint(point[1],point[0])
-     # Translate the x and y coordinates into pixel values
-     x = (point[1]-gt[0])/gt[1]
-     y = (point[0]-gt[3])/gt[5]
-     # Add the point to our return array
-     band = ds.GetRasterBand(1)                   
-     pix = band.ReadRaster(int(x),int(y), 1,1,1, 1, band.DataType)
-     val = struct.unpack('B', pix)
-     pixelPairs.append(val[0])
-    return pixelPairs
-dx = 0.018355195866356
-dy = 0.018355195866356
 keylist = dec.keys()
 sorted(keylist)
-#print(len(keylist))
 count=0
 for key in keylist:
- #if float(dec[key][0]) < 35 and float(dec[key][1]) > 60:
- pix = latLonToPixel('/home/dc/rapidnight/ir2.tif',[
-[float(dec[key][0])+4*dy,float(dec[key][1])-4*dx],[float(dec[key][0])+4*dy,float(dec[key][1])-3*dx],[float(dec[key][0])+4*dy,float(dec[key][1])-2*dx],[float(dec[key][0])+4*dy,float(dec[key][1])-dx],[float(dec[key][0])+4*dy,float(dec[key][1])],[float(dec[key][0])+4*dy,float(dec[key][1])+dx],[float(dec[key][0])+4*dy,float(dec[key][1])+2*dx],[float(dec[key][0])+4*dy,float(dec[key][1])+3*dx],[float(dec[key][0])+4*dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])+3*dy,float(dec[key][1])-4*dx],[float(dec[key][0])+3*dy,float(dec[key][1])-3*dx],[float(dec[key][0])+3*dy,float(dec[key][1])-2*dx],[float(dec[key][0])+3*dy,float(dec[key][1])-dx],[float(dec[key][0])+3*dy,float(dec[key][1])],[float(dec[key][0])+3*dy,float(dec[key][1])+dx],[float(dec[key][0])+3*dy,float(dec[key][1])+2*dx],[float(dec[key][0])+3*dy,float(dec[key][1])+3*dx],[float(dec[key][0])+3*dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])+2*dy,float(dec[key][1])-4*dx],[float(dec[key][0])+2*dy,float(dec[key][1])-3*dx],[float(dec[key][0])+2*dy,float(dec[key][1])-2*dx],[float(dec[key][0])+2*dy,float(dec[key][1])-dx],[float(dec[key][0])+2*dy,float(dec[key][1])],[float(dec[key][0])+2*dy,float(dec[key][1])+dx],[float(dec[key][0])+2*dy,float(dec[key][1])+2*dx],[float(dec[key][0])+2*dy,float(dec[key][1])+3*dx],[float(dec[key][0])+2*dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])+dy,float(dec[key][1])-4*dx],[float(dec[key][0])+dy,float(dec[key][1])-3*dx],[float(dec[key][0])+dy,float(dec[key][1])-2*dx],[float(dec[key][0])+dy,float(dec[key][1])-dx],[float(dec[key][0])+dy,float(dec[key][1])],[float(dec[key][0])+dy,float(dec[key][1])+dx],[float(dec[key][0])+dy,float(dec[key][1])+2*dx],[float(dec[key][0])+dy,float(dec[key][1])+3*dx],[float(dec[key][0])+dy,float(dec[key][1])+4*dx],
-[float(dec[key][0]),float(dec[key][1])-4*dx],[float(dec[key][0]),float(dec[key][1])-3*dx],[float(dec[key][0]),float(dec[key][1])-2*dx],[float(dec[key][0]),float(dec[key][1])-dx],[float(dec[key][0]),float(dec[key][1])],[float(dec[key][0]),float(dec[key][1])+dx],[float(dec[key][0]),float(dec[key][1])+2*dx],[float(dec[key][0]),float(dec[key][1])+3*dx],[float(dec[key][0]),float(dec[key][1])+4*dx],
-[float(dec[key][0])-dy,float(dec[key][1])-4*dx],[float(dec[key][0])-dy,float(dec[key][1])-3*dx],[float(dec[key][0])-dy,float(dec[key][1])-2*dx],[float(dec[key][0])-dy,float(dec[key][1])-dx],[float(dec[key][0])-dy,float(dec[key][1])],[float(dec[key][0])-dy,float(dec[key][1])+dx],[float(dec[key][0])-dy,float(dec[key][1])+2*dx],[float(dec[key][0])-dy,float(dec[key][1])+3*dx],[float(dec[key][0])-dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])-2*dy,float(dec[key][1])-4*dx],[float(dec[key][0])-2*dy,float(dec[key][1])-3*dx],[float(dec[key][0])-2*dy,float(dec[key][1])-2*dx],[float(dec[key][0])-2*dy,float(dec[key][1])-dx],[float(dec[key][0])-2*dy,float(dec[key][1])],[float(dec[key][0])-2*dy,float(dec[key][1])+dx],[float(dec[key][0])-2*dy,float(dec[key][1])+2*dx],[float(dec[key][0])-2*dy,float(dec[key][1])+3*dx],[float(dec[key][0])-2*dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])-3*dy,float(dec[key][1])-4*dx],[float(dec[key][0])-3*dy,float(dec[key][1])-3*dx],[float(dec[key][0])-3*dy,float(dec[key][1])-2*dx],[float(dec[key][0])-3*dy,float(dec[key][1])-dx],[float(dec[key][0])-3*dy,float(dec[key][1])],[float(dec[key][0])-3*dy,float(dec[key][1])+dx],[float(dec[key][0])-3*dy,float(dec[key][1])+2*dx],[float(dec[key][0])-3*dy,float(dec[key][1])+3*dx],[float(dec[key][0])-3*dy,float(dec[key][1])+4*dx],
-[float(dec[key][0])-4*dy,float(dec[key][1])-4*dx],[float(dec[key][0])-4*dy,float(dec[key][1])-3*dx],[float(dec[key][0])-4*dy,float(dec[key][1])-2*dx],[float(dec[key][0])-4*dy,float(dec[key][1])-dx],[float(dec[key][0])-4*dy,float(dec[key][1])],[float(dec[key][0])-4*dy,float(dec[key][1])+dx],[float(dec[key][0])-4*dy,float(dec[key][1])+2*dx],[float(dec[key][0])-4*dy,float(dec[key][1])+3*dx],[float(dec[key][0])-4*dy,float(dec[key][1])+4*dx]
-])
+ lat = dec[key][0]
+ lon = dec[key][1]
+ cls = dec[key][2]
+ print(count)
+ buf = count_out(lon,lat)
+ print(lat, lon, cls, len(buf))
+ val = ','.join(str(x) for x in buf)
+ print('.................................')
  count+=1
- dec[key].extend(pix)
- val = ','.join(str(x) for x in dec[key][3:])
- #print(str(key)+','+str(dec[key][0])+','+str(dec[key][1])+str(dec[key][2])+','+val)
- gl.write(str(key)+','+str(dec[key][0])+','+str(dec[key][1])+','+str(dec[key][2])+','+val+'\n')
+ gl.write(str(lat)+','+str(lon)+','+str(cls)+','+val+'\n')
+ #if count > 100:
+  #seconds2 = time.time()
+  #print('elapsed minutes....',(seconds2-seconds1)/60.0)
+  #exit()
 gl.close()
-#print(count)
-lst = list(dec.values())
-#print(len(lst))
-count = 0
-for item in lst:
- #print(item)
- #  Initialize the Image Size
- image_size = (9,9)
- latx = float(item[1])
- laty = float(item[0])
- #  Choose some Geographic Transform (Around Lake Tahoe)
- lat = [laty+4*dy,laty-4*dy]
- lon = [latx-4*dx,latx+4*dx]
- #print(lat,lon)
- arr = [int(i) for i in item[3:]]
- pixel = np.array(arr)
- #print(pixel.shape)
- #  Create Each Channel
- r_pixels = pixel.reshape(image_size)
- g_pixels = pixel.reshape(image_size)
- b_pixels = pixel.reshape(image_size)
- # set geotransform
- nx = image_size[0]
- ny = image_size[1]
- xmin, ymin, xmax, ymax = [min(lon), min(lat), max(lon), max(lat)]
- xres = (xmax - xmin) / float(nx)
- yres = (ymax - ymin) / float(ny)
- geotransform = (xmin, xres, 0, ymax, 0, -yres)
- # create the 3-band raster file
- fname = item[0]+item[1]
- dst_ds = gdal.GetDriverByName('GTiff').Create(fname+'.tif', ny, nx, 3, gdal.GDT_Byte)
- dst_ds.SetGeoTransform(geotransform)    # specify coords
- srs = osr.SpatialReference()            # establish encoding
- srs.ImportFromEPSG(4326)                # WGS84 lat/long
- dst_ds.SetProjection(srs.ExportToWkt()) # export coords to file
- dst_ds.GetRasterBand(1).WriteArray(r_pixels)   # write r-band to the raster
- dst_ds.GetRasterBand(2).WriteArray(g_pixels)   # write g-band to the raster
- dst_ds.GetRasterBand(3).WriteArray(b_pixels)   # write b-band to the raster
- dst_ds.FlushCache()                     # write to disk
- dst_ds = None
- count+=1
- #print(fname,'created')
-print(count)
+seconds2 = time.time()
+print('elapsed minutes....',(seconds2-seconds1)/60.0)
+

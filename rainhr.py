@@ -4,7 +4,7 @@ import tabula
 #read lat long file & store in adictionary
 stn = {}
 fl = open('arg_aws_agro_meta.csv')
-gl = open('maxtemp.csv','w')
+gl = open('rain_hr.csv','w')
 line = fl.readline()
 while line:
  line = line.split(',')
@@ -34,7 +34,7 @@ for item in st_lst:
    lst = [x.decode() for x in lst]
    name = lst[2]
    print('aws ',lst)
-   stn[name].append(lst[8])
+   stn[name].append(lst[5])
 for key in stn.keys():
  if len(stn[key]) > 2:
   rain = max(stn[key][2:])
@@ -55,7 +55,7 @@ for item in st_lst:
    lst = [x.decode() for x in lst]
    name = lst[2]
    print('arg ',lst)
-   stn[name].append(lst[8])
+   stn[name].append(lst[5])
 for key in stn.keys():
  if len(stn[key]) > 2:
   rain = max(stn[key][2:])
@@ -76,7 +76,7 @@ for item in st_lst:
    lst = [x.decode() for x in lst]
    name = lst[2]
    print('agro ',lst)
-   stn[name].append(lst[8])
+   stn[name].append(lst[5])
 for key in stn.keys():
  if len(stn[key]) > 2:
   rain = max(stn[key][2:])

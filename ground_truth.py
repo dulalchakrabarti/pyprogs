@@ -9,7 +9,7 @@
 def cldtype(buf1,buf2):
     '''
     '''
-    #print(buf1,buf2)
+    print(buf1,buf2)
     if buf1 == '/':
      return 0
     elif int(buf1) == 0:
@@ -49,7 +49,7 @@ gt = {}
 coun = ['Bang','India','Mald','Myan','Nep','Pak','Sri+L']
 rep = '' 
 for item in coun:
- f1 = urllib.request.urlopen("https://www.ogimet.com/display_synopsc2.php?lang=en&estado="+item+"&tipo=ALL&ord=REV&nil=NO&fmt=txt&ano=2021&mes=11&day=16&hora=18&anof=2021&mesf=11&dayf=16&horaf=18&send=send")
+ f1 = urllib.request.urlopen("https://www.ogimet.com/display_synopsc2.php?lang=en&estado="+item+"&tipo=ALL&ord=REV&nil=NO&fmt=txt&ano=2021&mes=12&day=06&hora=06&anof=2021&mesf=12&dayf=06&horaf=06&send=send")
  txt1 = f1.read()
  syn = txt1.split(b'\n')
  for item in syn:
@@ -84,9 +84,9 @@ for key in keylist:
  lon = gt[key][2]
  buf = gt[key][3]
  buflist = buf.split()
- #print(buflist)
- if len(buflist) > 5:
-  buf1 = buflist[5][1]
+ print(buflist)
+ if len(buflist) > 0:
+  buf1 = buflist[5][0]
   buf2 = buflist[-1]
   out = cldtype(buf1,buf2)
   fl.write(str(key)+','+name+','+str(lat)+','+str(lon)+','+str(out)+'\n')

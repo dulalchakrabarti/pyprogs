@@ -4,7 +4,7 @@ import time
 import requests
 import json
 seconds1 = time.time()
-gl = open('trainir1.csv', 'w')
+gl = open('trainir1.csv', 'a+')
 def count_out(lon,lat):
     '''
     '''
@@ -23,7 +23,7 @@ def count_out(lon,lat):
     for lati in np.arange(la_st_,la_end_,dy/64):
      lati_ = str(lati)
      try:
-      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-02-05T00:00:00&FORMAT=text/json")
+      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-02-10T18:00:00&FORMAT=text/json")
       resp = r1.text
       data = json.loads(resp)
       lat = data['lat'][19:47]
@@ -40,7 +40,7 @@ def count_out(lon,lat):
       print('Timed out!!')
       
 stn = {}
-lines = [line.rstrip('\n') for line in open('class.csv')]
+lines = [line.rstrip('\n') for line in open('obs_train_class.csv')]
 for inp in lines:
  lst = inp.split(',')
  stn[lst[0]] = lst[1:]

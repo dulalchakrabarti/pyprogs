@@ -4,7 +4,7 @@ import time
 import requests
 import json
 seconds1 = time.time()
-gl = open('trainir1.csv', 'w')
+gl = open('cloudir1.txt', 'w')
 def count_out(lon,lat):
     '''
     '''
@@ -14,26 +14,26 @@ def count_out(lon,lat):
     lo_st = str(lo_st_)
     lo_end_ = float(lon) + dx/2
     lo_end = str(lo_end_)
-    la_st_ = float(lat) - dy/4
+    la_st_ = float(lat) - dy/8
     la_st = str(la_st_)
-    la_end_ = float(lat) + dy/4
+    la_end_ = float(lat) + dy/8
     la_end = str(la_end_)
     out=[]
     count = 0
     for lati in np.arange(la_st_,la_end_,dy/64):
      lati_ = str(lati)
      try:
-      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-02-05T00:00:00&FORMAT=text/json")
+      r1 = requests.get("https://rapid.imd.gov.in/r2wms/wms?&service=WMS&request=GetTransect&LAYERS=3DIMG_L1B_STD4/IMG_TIR1&CRS=CRS:84&LINESTRING="+lo_st+"%20"+lati_+","+lo_end+"%20"+lati_+",&TIME=2022-01-12T12:00:00&FORMAT=text/json")
       resp = r1.text
       data = json.loads(resp)
-      lat = data['lat'][19:47]
-      lon = data['lon'][19:47]
-      vals = data['IMG_TIR1']['values'][19:47]
-      #for l,m,n in zip(lat,lon,vals):
-       #gl.write(str(l)+','+str(m)+','+str(n)+'\n')
+      lat = data['lat'][25:40]
+      lon = data['lon'][25:40]
+      vals = data['IMG_TIR1']['values'][25:40]
+      for l,m,n in zip(lat,lon,vals):
+       gl.write(str(l)+','+str(m)+','+str(n)+'\n')
       out.extend(vals)
       count+=1
-      if count > 27:
+      if count > 14:
        return out
       #print(count)
      except requests.exceptions.ConnectionError:
@@ -78,7 +78,7 @@ for key in keylist:
  val = ','.join(str(x) for x in buf)
  print('.................................')
  count+=1
- gl.write(str(lat)+','+str(lon)+','+str(cls)+','+val+'\n')
+ #gl.write(str(lat)+','+str(lon)+','+str(cls)+','+val+'\n')
  #if count > 100:
   #seconds2 = time.time()
   #print('elapsed minutes....',(seconds2-seconds1)/60.0)
