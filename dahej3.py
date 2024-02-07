@@ -1,8 +1,14 @@
 import requests
 import re,math
-url = 'http://nomads.ncep.noaa.gov:80/dods/wave/nfcens/20221209/nfcens_00z.ascii?htsgwsfc[0:128][221:237][431:437]'
+
+url = 'http://nomads.ncep.noaa.gov:80/dods/wave/gfswave/20240124/gfswave.global.0p16_00z.ascii?htsgwsfc[0:128][220][435]'
 html = requests.get(url).text
 vals = html.split('\n')
+for item in vals:
+ if len(item)>0:
+  item = item.split(',')
+  print(item[:5])
+'''
 wave = {}
 fl = open('wave.csv','w')
 fl.write('lat'+','+'lon'+','+'height'+'\n')
@@ -26,4 +32,5 @@ for item in vals:
   for idx in range(len(lon)):
    fl.write(lat_+','+lon[idx]+','+str(int(math.ceil(float(wv[idx]))))+'\n')
 fl.close() 
+'''
 
